@@ -49,6 +49,10 @@ while [ $# -gt 0 ]; do
           kind="$2"
           shift
           ;;
+      --force)
+          force="yes"
+          shift
+          ;;
       *)
           usage
           ;;
@@ -107,8 +111,13 @@ set +e
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 if kubectl get "${csr}/${csrName}"; then
-  if kubectl delete "${csr}/${csrName}"; then
-    echo "WARN: Previous CSR was found and removed."
+  if [ "${force:-no}" == "yes" ]
+    if kubectl delete "${csr}/${csrName}"; then
+      echo "WARN: Previous CSR was found and removed."
+    fi
+  else
+    echo "INFO: Not replacing previous CSR: ${csr}/${csrName}"
+    exit 0
   fi
 fi
 
